@@ -1,0 +1,5 @@
+com.preesa.razorpay.common_lib.audit.SharedAuditAutoConfiguration
+com.preesa.razorpay.common_lib.util.SharedSecurityAutoConfiguration
+com.preesa.razorpay.common_lib.idempotency.SharedResilienceAutoConfiguration
+com.preesa.razorpay.common_lib.exceptions.SharedExceptionAutoConfiguration
+com.preesa.razorpay.common_lib.config.SharedKafkaAutoConfiguration
