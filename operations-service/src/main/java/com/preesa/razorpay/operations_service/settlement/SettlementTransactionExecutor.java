@@ -89,9 +89,6 @@ public class SettlementTransactionExecutor {
 
             settlementPaymentRepository.saveAll(settlementPayments);
 
-            List<UUID> paymentIds = payments.stream().map(PaymentSettlementView::paymentId).toList();
-
-            paymentServiceClient.markSettled(paymentIds);
 
 
             SettlementBankDetails bankDetails = merchantServiceClient.getSettlementBankDetails(merchantId);
@@ -129,6 +126,12 @@ public class SettlementTransactionExecutor {
         if (errorCode == null) {
             settlement.setStatus(SettlementStatus.PROCESSED);
             settlement.setSettledAt(Instant.now());
+
+
+
+            SettlementPayment settlementPayment = settlementPaymentRepository.findBySettlementId(settlement.getId());
+
+            paymentServiceClient.markSettled(settlementPayment.getId().getPaymentId());
 
             settlementRepository.save(settlement);
 

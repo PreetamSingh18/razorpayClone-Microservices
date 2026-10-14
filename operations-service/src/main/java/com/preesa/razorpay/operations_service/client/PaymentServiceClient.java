@@ -18,5 +18,5 @@ public interface PaymentServiceClient {
     List<PaymentSettlementView> findUnsettledCapture(@RequestParam UUID merchantId);
 
     @PostMapping("/mark-settled")
-    void markSettled(@RequestBody List<UUID> paymentIds);
+    void markSettled(@RequestBody UUID paymentId);
 }

@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service 
@@ -36,17 +37,15 @@ public class PaymentLookupServiceImpl implements  PaymentLookupService {
     
     @Override
     @Transactional
-    public void markPaymentAsSettled(List<UUID> paymentIds) {
+    public void markPaymentAsSettled(UUID paymentId) {
 
-        Instant now = Instant.now();
-        List<Payment> paymentList = paymentRepository.findAllById(paymentIds);
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("PAYMENT", paymentId));
 
-        for(Payment payment: paymentList){
-            payment.setStatus(PaymentStatus.SETTLED);
-            payment.setSettledAt(now);
-        }
+        payment.setStatus(PaymentStatus.SETTLED);
+        payment.setSettledAt(Instant.now());
 
-        paymentRepository.saveAll(paymentList);
+        paymentRepository.save(payment);
     }
     
 }

@@ -29,8 +29,8 @@ public class InternalPaymentSettlementController {
     };
 
     @PostMapping("/mark-settled")
-    void markSettled(@RequestBody List<UUID> paymentIds){
-        paymentLookupService.markPaymentAsSettled(paymentIds);
+    void markSettled(@RequestBody UUID paymentId){
+        paymentLookupService.markPaymentAsSettled(paymentId);
 
     };
 }
