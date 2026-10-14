@@ -1,0 +1,44 @@
+package com.preesa.razorpay.payment_service.repository;
+
+
+import com.preesa.razorpay.common_lib.enums.PaymentStatus;
+import com.preesa.razorpay.payment_service.entity.Payment;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+public interface PaymentRepository extends JpaRepository<Payment, UUID> {
+    List<Payment> findPaymentByOrderId(UUID orderId);
+
+    Optional<Payment> findByIdAndMerchantId(UUID paymentId, UUID merchantId);
+
+    List<Payment> findAllByStatusAndUpdatedAtBefore(PaymentStatus paymentStatus, Instant globalWindow);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from Payment p where p.id =:paymentId and p.merchantId =:merchantId")
+    Optional<Payment> findByIdAndMerchantIdForUpdate(UUID paymentId, UUID merchantId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from Payment p where p.id =:paymentId ")
+    Optional<Payment> findByIdForUpdate(UUID paymentId);
+
+    /*
+     * @Lock(LockModeType.PESSIMISTIC_WRITE) adds a FOR UPDATE clause at the end of
+     * select query.
+     * It prevents another transaction from modifying or locking those same rows
+     * until your transaction commits/rolls back.
+     * e.g : select p from Payment p where p.merchantId = :merchantId and p.status =
+     * :status and p.settledAt is null FOR UPDATE;
+     */
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select p from Payment p where p.merchantId =:merchantId and p.status =: captured and p.settledAt is null ")
+    List<Payment> findByMerchantIdAndStatusForUpdate(UUID merchantId, PaymentStatus captured);
+}
+

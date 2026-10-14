@@ -21,7 +21,7 @@ public class SharedSecurityAutoConfiguration {
     @Bean
     @ConditionalOnProperty(name = "vault.service.master-key")
     public BytesEncryptor masterKeyEncryptor(@Value("${vault.service.master-key}") String masterKey){
-     return  new AesEncryptionConfig().masterKeyEncryptor(masterKey);
+     return new AesEncryptionConfig().masterKeyEncryptor(masterKey);
     }
 
     @Bean

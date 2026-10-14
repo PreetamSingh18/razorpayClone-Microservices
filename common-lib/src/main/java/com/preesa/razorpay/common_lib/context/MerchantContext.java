@@ -8,10 +8,9 @@ import org.springframework.web.context.annotation.RequestScope;
 
 import java.util.UUID;
 
-@Component
+
 @Getter
 @Setter
-@RequestScope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 public class MerchantContext {
 
     private UUID merchantId;

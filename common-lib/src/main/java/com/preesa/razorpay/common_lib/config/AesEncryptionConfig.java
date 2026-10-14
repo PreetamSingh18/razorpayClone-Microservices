@@ -11,10 +11,9 @@ import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 
 
-@Configuration
 public class AesEncryptionConfig {
 
-    @Bean 
+
     public  BytesEncryptor masterKeyEncryptor(String masterKey){
          byte[] masterKeyByte= Base64.getDecoder().decode(masterKey);
           SecretKeySpec dekByte= new SecretKeySpec(masterKeyByte,"AES/GCM/NoPadding");

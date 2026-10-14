@@ -105,14 +105,15 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<!--				Skip the maven plugin to create plain jar not fat jar-->
+				<configuration>
+					<skip>true</skip>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-<!--				Skip the maven plugin to create plain jar not fat jar-->
-				<configuration>
-					<skip>true</skip>
-				</configuration>
+
 				<executions>
 					<execution>
 						<id>default-compile</id>
