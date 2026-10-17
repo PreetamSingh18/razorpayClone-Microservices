@@ -11,7 +11,7 @@ import javax.crypto.spec.SecretKeySpec;
 @Configuration
 public class VaultEncryptionConfig {
 
-    @Value("${vault.service.master-key}")
+    @Value("${vault.master-key}")
     private String masterKey;
 
     public static BytesEncryptor panEncryptor(byte[] dek){

@@ -2,6 +2,7 @@ package com.preesa.razorpay.merchant_service.serviceImpl;
 
 
 import com.preesa.razorpay.common_lib.enums.UserRole;
+import com.preesa.razorpay.common_lib.exceptions.BusinessRuleViolationException;
 import com.preesa.razorpay.common_lib.exceptions.DuplicateResourceException;
 import com.preesa.razorpay.common_lib.exceptions.ResourceNotFoundException;
 import com.preesa.razorpay.merchant_service.dto.request.LoginRequest;
@@ -17,8 +18,6 @@ import com.preesa.razorpay.merchant_service.security.JwtUtill;
 import com.preesa.razorpay.merchant_service.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,8 +32,6 @@ public class AuthServiceImpl implements AuthService {
     private final AppUserRepository appUserRepository;
 
     private final MerchantMapper merchantMapper;
-
-    private final AuthenticationManager authenticationManager;
 
     private  final JwtUtill jwtUtill ;
 
@@ -76,11 +73,16 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
-
+        // Validate user credentials
+        // Note: Password validation should be done here if not using Spring Security's AuthenticationManager
+        
         AppUser  appUser= appUserRepository.findByEmail(loginRequest.email()).orElseThrow(()->new ResourceNotFoundException("User",loginRequest.email()));
 
-      String token=  jwtUtill.generateAccessToken(appUser.getEmail(),appUser.getMerchant().getId(),appUser.getRole().name());
+        if(!passwordEncoder.matches(loginRequest.password(),appUser.getPasswordHash())){
+            throw new BusinessRuleViolationException("LOGIN_REQUEST", "Invalid password or incorrect password ");
+        }
+        
+        String token=  jwtUtill.generateAccessToken(appUser.getEmail(),appUser.getMerchant().getId(),appUser.getRole().name());
         return new LoginResponse(token);
     }
 }

@@ -26,6 +26,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString 
+@Builder 
 public class Refund extends BaseAuditEntity {
 
     @Id
@@ -45,6 +46,7 @@ public class Refund extends BaseAuditEntity {
 
     @Enumerated(value = EnumType.STRING)
     @Column(nullable = false,length = 50)
+    @Builder.Default
     private RefundStatus status = RefundStatus.PENDING;
 
     @Column(length = 100)

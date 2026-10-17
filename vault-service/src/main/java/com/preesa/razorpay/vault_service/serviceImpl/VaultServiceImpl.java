@@ -19,6 +19,7 @@ import com.preesa.razorpay.vault_service.processor.CardPaymentProcessor;
 import com.preesa.razorpay.vault_service.repository.CardTokenRepository;
 import com.preesa.razorpay.vault_service.repository.VaultCardRepository;
 import com.preesa.razorpay.vault_service.service.VaultService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.encrypt.BytesEncryptor;
@@ -32,14 +33,15 @@ import java.util.UUID;
 
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor 
 public class VaultServiceImpl implements VaultService {
 
     private final CardTokenRepository cardTokenRepository;
     private final VaultCardRepository vaultCardRepository;
     private final BytesEncryptor dekEncryptor;
     private final CardPaymentProcessor cardPaymentProcessor;
+
 
     /**
      * @param request

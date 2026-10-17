@@ -5,7 +5,6 @@ import com.preesa.razorpay.common_lib.dto.SettlementBankDetails;
 import com.preesa.razorpay.common_lib.dto.WebhookTarget;
 import com.preesa.razorpay.common_lib.enums.MerchantStatus;
 
-import com.preesa.razorpay.common_lib.util.SignerUtil;
 import com.preesa.razorpay.merchant_service.entity.Merchant;
 import com.preesa.razorpay.merchant_service.repository.MerchantRepository;
 import com.preesa.razorpay.merchant_service.repository.WebhookConfigRepository;

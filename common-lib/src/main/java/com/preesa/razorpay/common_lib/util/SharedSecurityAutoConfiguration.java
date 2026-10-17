@@ -19,10 +19,17 @@ public class SharedSecurityAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "vault.service.master-key")
-    public BytesEncryptor masterKeyEncryptor(@Value("${vault.service.master-key}") String masterKey){
+    @ConditionalOnProperty(name = "vault.master-key")
+    public BytesEncryptor masterKeyEncryptor(@Value("${vault.master-key}") String masterKey){
      return new AesEncryptionConfig().masterKeyEncryptor(masterKey);
     }
+
+    @Bean
+    @ConditionalOnProperty(name = "webhoook.secret-encryption-key")
+    public BytesEncryptor webhookEncryptor(@Value("${webhoook.secret-encryption-key}") String masterKey){
+     return new AesEncryptionConfig().masterKeyEncryptor(masterKey);
+    }
+
 
     @Bean
     @RequestScope(proxyMode = ScopedProxyMode.TARGET_CLASS)

@@ -27,7 +27,7 @@ public class WebhookDeliverExecutor {
     @Value("${app.webhook.delivery.signature-header:X-Razorpay-Signature}")
     private String signatureHeader;
 
-    private final Integer MAX_ATTEMPS = 7;
+    private static  final Integer MAX_ATTEMPS = 7;
 
     private static final List<Duration> BACKOFF = List.of(
        Duration.ofMinutes(1), Duration.ofMinutes(5), Duration.ofMinutes(30),

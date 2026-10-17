@@ -4,7 +4,7 @@ package com.preesa.razorpay.merchant_service.serviceImpl;
 import com.preesa.razorpay.common_lib.exceptions.BusinessRuleViolationException;
 import com.preesa.razorpay.common_lib.exceptions.ResourceNotFoundException;
 import com.preesa.razorpay.common_lib.util.RandomizerUtil;
-import com.preesa.razorpay.merchant_service.cache.ApiKeyCache;
+import com.preesa.razorpay.common_lib.cache.ApiKeyCache;
 import com.preesa.razorpay.merchant_service.dto.request.ApiKeyCreateRequest;
 import com.preesa.razorpay.merchant_service.dto.response.ApiKeyCreateResponse;
 import com.preesa.razorpay.merchant_service.dto.response.ApiKeyResponse;

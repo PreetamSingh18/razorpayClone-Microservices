@@ -3,6 +3,7 @@ package com.preesa.razorpay.common_lib.ratelimit.ratelimiterImpl;
 
 import com.preesa.razorpay.common_lib.ratelimit.RateLimitResult;
 import com.preesa.razorpay.common_lib.ratelimit.RateLimiter;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -66,7 +67,7 @@ public class SlidingWindowLuaScripter implements RateLimiter {
        """;
 
 
-    private final RedisScript<List<Long>> script = RedisScript.of(SLIDING_WINDOW_LUA,
+    private  static final RedisScript<List<Long>> script = RedisScript.of(SLIDING_WINDOW_LUA,
             (Class<List<Long>>) (Class<?>) List.class);
 
 
