@@ -7,6 +7,10 @@ import com.preesa.razorpay.payment_service.gateway.PaymentAdapter;
 import com.preesa.razorpay.payment_service.gateway.dto.PaymentRequest;
 import com.preesa.razorpay.payment_service.gateway.dto.PaymentResult;
 import com.preesa.razorpay.payment_service.processor.PaymentProcessorRouter;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
+
 import com.preesa.razorpay.common_lib.dto.PaymentProcessorResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +30,8 @@ public class CardPaymentAdapter implements PaymentAdapter {
      * @return
      */
     @Override
+    @CircuitBreaker(name = "vault-service")
+    @Retry(name = "vault-service")
     public PaymentResult initiate(PaymentRequest request) {
         try {
             log.info("Initiate Payment with CardPaymentAdapter with paymentId:{}", request.paymentId());

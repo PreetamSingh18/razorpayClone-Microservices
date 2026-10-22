@@ -8,6 +8,8 @@ import com.preesa.razorpay.operations_service.entity.OutBoxEvent;
 import com.preesa.razorpay.operations_service.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -27,6 +29,7 @@ public class OutboxPoller {
     private final OutboxResultHandler outboxResultHandler;
 
     @Scheduled(fixedDelay = 5000)
+    @SchedulerLock (name = "operations-service-outbox-poller", lockAtMostFor = "15s", lockAtLeastFor = "1s" )
     public void poll() {
 
         List<OutBoxEvent> pendingEvents = outboxEventRepository.findByStatusOrderByCreatedAtAsc(OutBoxStatus.PENDING);

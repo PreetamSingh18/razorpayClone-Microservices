@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -110,7 +111,7 @@ public class VaultServiceImpl implements VaultService {
         String expiry = vaultCard.getExpiryMonth() + "/" + vaultCard.getExpiryYear();
 
         PaymentProcessorRequest paymentProcessorRequest = PaymentProcessorRequest.card(paymentId, pan, expiry, amount, methodDetails);
-      PaymentProcessorResponse response =  cardPaymentProcessor.charge(paymentProcessorRequest);
+      PaymentProcessorResponse response =  cardPaymentProcessor.charge(paymentProcessorRequest).get(5,TimeUnit.SECONDS);
         log.info("vault change registered with token {}***",token.substring(0,4));
         pan=null;
       return response;

@@ -43,15 +43,15 @@ public class SettlementTransactionExecutor {
     private final SettlementPaymentRepository settlementPaymentRepository;
     private final BankTransferProcessor bankTransferProcessor;
     private final OutBoxEventPublisher outBoxEventPublisher;
-    private final PaymentServiceClient paymentServiceClient;
-    private final MerchantServiceClient merchantServiceClient;
+    private final SettlementClientWrapper settlementClientWrapper;
+
 
     @Transactional
     public void processForMerchant(UUID merchantId, Instant date) {
 
         LocalDate localDate = date.atZone(ZoneId.systemDefault()).toLocalDate();
 
-        List<PaymentSettlementView> payments = paymentServiceClient.findUnsettledCapture(merchantId);
+        List<PaymentSettlementView> payments = settlementClientWrapper.findUnsettledCapturePayments(merchantId);
 
         if (payments == null || payments.isEmpty()) {
             log.info("No unsettled Payment found to settle for merchantId :{} at {}", merchantId, localDate);
@@ -91,7 +91,7 @@ public class SettlementTransactionExecutor {
 
 
 
-            SettlementBankDetails bankDetails = merchantServiceClient.getSettlementBankDetails(merchantId);
+            SettlementBankDetails bankDetails = settlementClientWrapper.getSettlementBankDetailsFromMerchant(merchantId);
 
             // Calling BankTransfer Processor.
             BankTransferResult bankTransferResult = bankTransferProcessor.initiate(settlement.getId(), merchantId,
@@ -131,7 +131,7 @@ public class SettlementTransactionExecutor {
 
             SettlementPayment settlementPayment = settlementPaymentRepository.findBySettlementId(settlement.getId());
 
-            paymentServiceClient.markSettled(settlementPayment.getId().getPaymentId());
+            settlementClientWrapper.markSettledPayments(settlementPayment.getId().getPaymentId());
 
             settlementRepository.save(settlement);
 

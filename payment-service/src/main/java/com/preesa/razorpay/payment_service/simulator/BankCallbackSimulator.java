@@ -9,6 +9,8 @@ import com.preesa.razorpay.payment_service.repository.PaymentRepository;
 import com.preesa.razorpay.payment_service.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +26,7 @@ public class BankCallbackSimulator {
     private final SimulatorConfig simulatorConfig;
 
     @Scheduled(fixedRateString = "${payment.simulator.poll-interval-ms:5000}" )
+    @SchedulerLock (name = "payment-service-bank-callback-simulator", lockAtMostFor = "10s", lockAtLeastFor = "1s" )
     public void processCallBacks(){
         log.info("Processing bank callbacks simulator at {}", Instant.now());
         Instant globalWindow = Instant.now().minusSeconds(1);

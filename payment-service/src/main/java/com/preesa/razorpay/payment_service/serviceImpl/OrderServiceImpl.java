@@ -22,6 +22,9 @@ import com.preesa.razorpay.payment_service.outbox.OutBoxEventPublisher;
 import com.preesa.razorpay.payment_service.repository.OrderRepository;
 import com.preesa.razorpay.payment_service.repository.PaymentRepository;
 import com.preesa.razorpay.payment_service.service.OrderService;
+
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +52,8 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     @Transactional
+    @CircuitBreaker (name = "merchant-service")
+    @Retry(name = "merchant-service")
     public OrderResponse createOrder(UUID merchantId, CreateOrderRequest request) {
 
         if(request.receipt() != null && orderRepository.existsByMerchantIdAndReceipt(merchantId,request.receipt())){

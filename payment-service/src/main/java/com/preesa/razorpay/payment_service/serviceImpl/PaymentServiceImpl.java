@@ -19,6 +19,7 @@ import com.preesa.razorpay.payment_service.outbox.OutBoxEventPublisher;
 import com.preesa.razorpay.payment_service.processor.PaymentProcessorRouter;
 import com.preesa.razorpay.payment_service.repository.OrderRepository;
 import com.preesa.razorpay.payment_service.repository.PaymentRepository;
+import com.preesa.razorpay.payment_service.saga.PaymentAuthorizationRecorder;
 import com.preesa.razorpay.payment_service.service.PaymentService;
 import com.preesa.razorpay.payment_service.statemachine.PaymentTransitionService;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaymentTransitionService paymentTransitionService;
 
     private  final OutBoxEventPublisher eventPublisher;
+
+    private final PaymentAuthorizationRecorder paymentAuthorizationRecorder;
     /**
      * @param merchantId
      * @param request
@@ -59,65 +62,20 @@ public class PaymentServiceImpl implements PaymentService {
 /*
         OrderRecord orderRecord = orderRepository.findByMerchantIdAndId(merchantId, request.orderId());
 */
-        //PESSIMISTIC_WRITE LOCK
-        OrderRecord orderRecord = orderRepository.findByMerchantIdAndIdForUpdate(merchantId, request.orderId());
+       // Divided into two step of Transaction for SAGA orchestration.
+       Payment payment = paymentAuthorizationRecorder.recordPayment(merchantId, request);
 
-        if (orderRecord == null) {
-            throw new ResourceNotFoundException("order", request.orderId());
-        }
+       // STEP 2: 
 
-        if (orderRecord.getOrderStatus() != OrderStatus.CREATED && orderRecord.getOrderStatus() != OrderStatus.ATTEMPTED) {
-            throw new BusinessRuleViolationException("ORDER_NOT_PAYABLE", "Order cannot be payable with status" + orderRecord.getOrderStatus());
-        }
-        orderRecord.setOrderStatus(OrderStatus.ATTEMPTED);
-        orderRecord.setAttempts(orderRecord.getAttempts()+1);
+      PaymentResult result;
+      try{
+          result= paymentGatewayRouter.initiate(new PaymentRequest(payment.getId(),request.orderId(),merchantId,payment.getOrder().getAmount(),request.paymentMethod(),request.methodDetails()));
+      }
+      catch(Exception e){
+           return paymentAuthorizationRecorder.compensateAuthorizationFailure(payment.getId(),"PAYMENT_GATEWAY_ROUTER_UNREACHABLE",e.getMessage());
+      }
 
-
-
-        Payment payment= Payment.builder()
-                .merchantId(merchantId)
-                .order(orderRecord)
-                .amount(orderRecord.getAmount())
-                .status(PaymentStatus.CREATED)
-                .method(request.paymentMethod())
-                .methodDetails(request.methodDetails())
-                .build();
-
-         payment = paymentRepository.save(payment);
-
-        paymentTransitionService.apply(payment, PaymentEvent.AUTHORIZE_ATTEMPT);
-       PaymentResult result= paymentGatewayRouter.initiate(new PaymentRequest(payment.getId(),request.orderId(),merchantId,orderRecord.getAmount(),request.paymentMethod(),request.methodDetails()));
-
-        switch (result) {
-            case PaymentResult.Pending(String processorRef) -> payment.setProcessorReference(processorRef);
-            case PaymentResult.Failure(String errorCode, String errorDescription) -> {
-                payment.setErrorCode(errorCode);
-                payment.setErrorDescription(errorDescription);
-              //  payment.setStatus(PaymentStatus.FAILED);
-                paymentTransitionService.apply(payment, PaymentEvent.AUTHORIZE_FAIL);
-            }
-            case PaymentResult.Success(String bankReference) -> {
-                log.warn("Invalid State ");
-                return null;
-            }
-        }
-        orderRepository.save(orderRecord);
-        payment = paymentRepository.save(payment);
-
-        // Store Events in OutBox to publish in Kafka
-
-        eventPublisher.publish(EventAggregateType.PAYMENT,payment.getId(),"PAYMENT_CREATED",
-                Map.of("orderId",orderRecord.getId().toString(),
-                        "paymentId",payment.getId().toString(),
-                        "merchantId",orderRecord.getMerchantId().toString(),
-                        "paymentStatus",payment.getStatus().name(),
-                        "amountUnits",orderRecord.getAmount().getAmountUnits(),
-                        "amountCurrency",orderRecord.getAmount().getCurrency(),
-                        "paymentMethod",payment.getMethod().name()
-
-                ));
-
-        return   paymentMapper.toResponse(payment);
+       return paymentAuthorizationRecorder.applyGatewayResult(payment.getId(),result);
 
     }
 
