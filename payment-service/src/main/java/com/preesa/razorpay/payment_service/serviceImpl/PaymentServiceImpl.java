@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -57,13 +58,20 @@ public class PaymentServiceImpl implements PaymentService {
      * @return
      */
     @Override
-    @Transactional
-    public PaymentResponse initiate(UUID merchantId, PaymentInitRequest request) {
-/*
-        OrderRecord orderRecord = orderRepository.findByMerchantIdAndId(merchantId, request.orderId());
-*/
+    public PaymentResponse initiate(UUID merchantId, PaymentInitRequest request, String idempotencyKey) {
+
+        if(idempotencyKey != null){
+            var existing = paymentAuthorizationRecorder.findExistingAttempts(merchantId,idempotencyKey);
+    
+            if(existing.isPresent()){
+                log.info("idempotency replay for paymentId {}",existing.get().id());
+                return existing.get();
+            }
+        }
+
+
        // Divided into two step of Transaction for SAGA orchestration.
-       Payment payment = paymentAuthorizationRecorder.recordPayment(merchantId, request);
+       Payment payment = paymentAuthorizationRecorder.recordPayment(merchantId, request,idempotencyKey);
 
        // STEP 2: 
 

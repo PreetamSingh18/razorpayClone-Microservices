@@ -1,6 +1,7 @@
 package com.preesa.razorpay.payment_service.saga;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -38,7 +39,7 @@ public class PaymentAuthorizationRecorder {
     private final PaymentMapper paymentMapper;
 
     @Transactional 
-    public Payment recordPayment(UUID merchantId,PaymentInitRequest request){
+    public Payment recordPayment(UUID merchantId,PaymentInitRequest request, String idempotencyKey){
          //PESSIMISTIC_WRITE LOCK
         OrderRecord orderRecord = orderRepository.findByMerchantIdAndIdForUpdate(merchantId, request.orderId());
 
@@ -59,6 +60,7 @@ public class PaymentAuthorizationRecorder {
                 .order(orderRecord)
                 .amount(orderRecord.getAmount())
                 .status(PaymentStatus.CREATED)
+                .idempotencyKey(idempotencyKey != null ? idempotencyKey: UUID.randomUUID().toString())
                 .method(request.paymentMethod())
                 .methodDetails(request.methodDetails())
                 .build();
@@ -134,6 +136,12 @@ public class PaymentAuthorizationRecorder {
                         "paymentMethod",payment.getMethod().name()
 
                 ));
+
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<PaymentResponse> findExistingAttempts(UUID merchantId, String idempotencyKey) {
+       return paymentRepository.findByMerchantIdAndIdempotencyKey(merchantId,idempotencyKey).map(paymentMapper::toResponse)  ;
 
     }
 
