@@ -1,0 +1,25 @@
+spring:
+  cloud:
+    discovery:
+      enabled: false
+    config.server.git:
+      uri: ${GIT_CONFIG_REPO}
+      username: ${GIT_USERNAME}
+      password: ${GIT_PASSWORD}
+      default-label: main
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    hostname: localhost
+
+management:
+  zipkin:
+    tracing:
+      endpoint: http://zipkin.razorpay-core.svc.cluster.local:9411/api/v2/spans
