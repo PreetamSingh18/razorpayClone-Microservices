@@ -1,0 +1,26 @@
+# Environment and secrets
+*.env
+k8s-secrets.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build
+target/
+build/
+dist/
+node_modules/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
